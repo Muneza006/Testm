@@ -23,3 +23,130 @@ BEGIN
 END;
 /
 commit;
+
+---Ranking Data within a Category
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+    CURSOR c_ranked_projects IS
+        SELECT 
+            project_id,
+            project_name,
+            category,
+            budget,
+            RANK() OVER (PARTITION BY category ORDER BY budget DESC) AS rnk,
+            DENSE_RANK() OVER (PARTITION BY category ORDER BY budget DESC) AS dense_rnk
+        FROM engineering_projects;
+
+BEGIN
+    FOR rec IN c_ranked_projects LOOP
+        DBMS_OUTPUT.PUT_LINE(
+            'Project ID: ' || rec.project_id ||
+            ', Name: ' || rec.project_name ||
+            ', Category: ' || rec.category ||
+            ', Budget: ' || rec.budget ||
+            ', Rank: ' || rec.rnk ||
+            ', Dense Rank: ' || rec.dense_rnk
+        );
+    END LOOP;
+END;
+/
+commit;
+---Identifying Top Records
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+    CURSOR c_top_projects IS
+        WITH ranked_projects AS (
+            SELECT 
+                project_id,
+                project_name,
+                category,
+                budget,
+                DENSE_RANK() OVER (PARTITION BY category ORDER BY budget DESC) AS rank
+            FROM engineering_projects
+        )
+        SELECT *
+        FROM ranked_projects
+        WHERE rank <= 3;
+
+BEGIN
+    FOR rec IN c_top_projects LOOP
+        DBMS_OUTPUT.PUT_LINE(
+            'Project ID: ' || rec.project_id ||
+            ', Name: ' || rec.project_name ||
+            ', Category: ' || rec.category ||
+            ', Budget: ' || rec.budget ||
+            ', Rank: ' || rec.rank
+        );
+    END LOOP;
+END;
+/
+commit;
+---Finding the Earliest Records
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+    CURSOR c_earliest_projects IS
+        WITH earliest_projects AS (
+            SELECT 
+                project_id,
+                project_name,
+                category,
+                start_date,
+                ROW_NUMBER() OVER (PARTITION BY category ORDER BY start_date) AS start_order
+            FROM engineering_projects
+        )
+        SELECT *
+        FROM earliest_projects
+        WHERE start_order <= 2;
+
+BEGIN
+    FOR rec IN c_earliest_projects LOOP
+        DBMS_OUTPUT.PUT_LINE(
+            'Project ID: ' || rec.project_id ||
+            ', Name: ' || rec.project_name ||
+            ', Category: ' || rec.category ||
+            ', Start Date: ' || TO_CHAR(rec.start_date, 'YYYY-MM-DD') ||
+            ', Start Order: ' || rec.start_order
+        );
+    END LOOP;
+END;
+/
+commit;
+---Aggregation with Window Functions
+SET SERVEROUTPUT ON;
+
+DECLARE
+    CURSOR c_project_budgets IS
+        SELECT 
+            project_id,
+            project_name,
+            category,
+            budget,
+            MAX(budget) OVER (PARTITION BY category) AS category_max_budget,
+            MAX(budget) OVER () AS overall_max_budget
+        FROM engineering_projects;
+
+BEGIN
+    FOR rec IN c_project_budgets LOOP
+        DBMS_OUTPUT.PUT_LINE(
+            'Project ID: ' || rec.project_id ||
+            ', Name: ' || rec.project_name ||
+            ', Category: ' || rec.category ||
+            ', Budget: ' || rec.budget ||
+            ', Category Max Budget: ' || rec.category_max_budget ||
+            ', Overall Max Budget: ' || rec.overall_max_budget
+        );
+    END LOOP;
+END;
+/
+commit;
+
+
+
+
+
