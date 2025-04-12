@@ -1,4 +1,4 @@
-## Creat table Engineering projects
+## Create table Engineering projects
 ```sql
 CREATE TABLE engineering_projects (
     project_id INT PRIMARY KEY,
