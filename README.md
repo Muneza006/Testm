@@ -43,6 +43,17 @@ commit;
 ![image](https://github.com/user-attachments/assets/e41c5715-4bc1-4de0-b953-0a3d26b4b3b3)
 
 # 1. Compare Values with Previous/Next Records:
+## Explanation:
+
+The LAG() function retrieves the budget of the previous project when projects are ordered by start date
+The LEAD() function retrieves the budget of the next project
+The CASE statement classifies each budget as HIGHER, LOWER, or EQUAL compared to the previous project
+For the first project (with no previous), we show 'N/A' using the COALESCE function
+
+## Real-life Application:
+
+This analysis helps project managers identify budget trends over time. It can reveal whether project budgets are consistently increasing,
+which might indicate scope creep or inflation in material costs. It's particularly useful for financial planning and forecasting future project budgets.
 
 Compare project budgets with previous and next projects (ordered by start date):
 
@@ -92,6 +103,16 @@ END;
 
 # 2. Ranking Data within a Category
 
+## Explanation of Difference Between RANK() and DENSE_RANK():
+
+RANK() assigns the same rank to tied values but leaves gaps in the ranking sequence
+DENSE_RANK() assigns the same rank to tied values but does not leave gaps
+
+## Real-life Application:
+
+This ranking helps engineering firms identify their highest-budget projects in each category, which often correlate with the most complex or prestigious projects. 
+The ranking can be used for resource allocation, portfolio showcasing, and identifying expertise areas within the firm.
+
 Rank projects by budget within each engineering category:
 ```sql
 SET SERVEROUTPUT ON;
@@ -124,6 +145,19 @@ END;
 ```
 ![image](https://github.com/user-attachments/assets/e20b8692-1e5e-46e5-b332-e31075f0af98)
 # 3. Identifying Top Records
+
+## Explanation:
+
+A Common Table Expression (CTE) first ranks all projects within their categories by budget
+DENSE_RANK() is used to handle potential budget ties appropriately
+The WHERE clause filters to include only the top 3 highest-budget projects in each category
+If there are ties for the 3rd position, all tied projects would be included
+
+## Real-life Application:
+
+Engineering firms often highlight their top projects when bidding for new contracts. This query quickly identifies the most significant projects by budget in each engineering discipline,
+which can be featured in proposals, marketing materials, or annual reports.
+
 
 Fetch the top 3 highest-budget projects in each category:
 
@@ -163,6 +197,19 @@ END;
 
 # 4. Finding the Earliest Records
 
+## Explanation:
+
+ROW_NUMBER() assigns a unique sequence number to projects in each category based on start date
+Unlike RANK() or DENSE_RANK(), ROW_NUMBER() will always assign unique numbers even when there are ties
+This query identifies the first two projects started in each engineering category
+If there happens to be a tie in start date, ROW_NUMBER() will arbitrarily assign sequence numbers
+
+## Real-life Application:
+
+This analysis helps identify the pioneering projects in each engineering category. For engineering firms, understanding which projects initiated work in -
+specific disciplines can provide historical context for expertise development. It's also useful for tracking the evolution of project complexity and scope over time.
+
+
 Retrieve the first 2 projects started in each category:
 
 ```sql
@@ -200,6 +247,22 @@ END;
 ![image](https://github.com/user-attachments/assets/f81e09f3-4a57-4f8d-968a-07e9e73be336)
 
 # 5. Aggregation with Window Functions
+
+## Explanation:
+
+MAX(budget) OVER (PARTITION BY category) calculates the maximum budget within each engineering category
+MAX(budget) OVER () calculates the maximum budget across all projects
+The key difference is in the PARTITION BY clause:
+
+With PARTITION BY category, the calculation is done separately for each category
+Without PARTITION BY (empty OVER ()), the calculation spans all projects
+
+
+
+## Real-life Application:
+This analysis provides context for individual project budgets by showing how they compare to the maximum budgets both within their category and across the entire project portfolio. 
+Project managers can use this to understand budget scaling within different engineering disciplines and identify which categories typically require the largest investments.
+
 
 Calculate category-level and overall maximum budgets:
 ```sql
